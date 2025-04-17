@@ -1,0 +1,1115 @@
+{% extends "base.html" %}
+
+{% block title %}Wallet - Marble Blockchain{% endblock %}
+
+{% block extra_css %}
+<style>
+    .token-card {
+        transition: all 0.2s;
+        border-radius: 10px;
+    }
+    
+    .token-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .token-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+    
+    .transaction-item {
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .transaction-item:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .transaction-item.send {
+        border-left-color: var(--danger-color);
+    }
+    
+    .transaction-item.receive {
+        border-left-color: var(--success-color);
+    }
+    
+    .transaction-item.swap {
+        border-left-color: var(--primary-color);
+    }
+    
+    .transaction-item.stake {
+        border-left-color: var(--warning-color);
+    }
+    
+    .qr-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    
+    .address-copy {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .address-copy:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Tab styling */
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-color);
+    }
+    
+    .tab-content {
+        padding: 20px 0;
+    }
+    
+    /* Balance header */
+    .balance-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-radius: 10px;
+        padding: 20px;
+        color: white;
+        margin-bottom: 20px;
+    }
+    
+    .token-distribution {
+        height: 250px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Wallet</h2>
+                <div>
+                    <button class="btn btn-outline-secondary me-2" id="refreshWallet">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                        <i class="fas fa-file-export me-1"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Overview -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="balance-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Total Balance</h5>
+                        <h2 class="mb-1">{{ total_balance_usd|default('$0.00') }}</h2>
+                        <p class="mb-0">{{ total_balance_btc|default('0.00000000 BTC') }}</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h5 class="mb-3">24h Change</h5>
+                        <h3 class="mb-1 {% if balance_change|default(0) >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ balance_change|default('0.00') }}%
+                            <i class="fas fa-{% if balance_change|default(0) >= 0 %}caret-up{% else %}caret-down{% endif %}"></i>
+                        </h3>
+                        <p class="mb-0">{{ balance_change_usd|default('$0.00') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <ul class="nav nav-pills mb-3" id="walletTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="assets-tab" data-bs-toggle="pill" data-bs-target="#assets" type="button" role="tab">Assets</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">Activity</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="deposit-tab" data-bs-toggle="pill" data-bs-target="#deposit" type="button" role="tab">Deposit</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="withdraw-tab" data-bs-toggle="pill" data-bs-target="#withdraw" type="button" role="tab">Withdraw</button>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="walletTabContent">
+                <!-- Assets Tab -->
+                <div class="tab-pane fade show active" id="assets" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Your Assets</h5>
+                        <div class="input-group" style="width: 250px;">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control form-control-sm" id="assetSearch" placeholder="Search tokens...">
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="tokenList">
+                        {% for token in tokens|default([]) %}
+                        <div class="col-md-6 mb-3 token-item">
+                            <div class="card token-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="token-icon" style="background-color: {{ token.color|default('#1a73e8') }};">
+                                            {{ token.symbol|default('?')|first }}
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-0">{{ token.name|default('Unknown Token') }}</h5>
+                                            <small class="text-muted">{{ token.symbol|default('???') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <p class="mb-0"><strong>{{ token.balance|default('0.00') }}</strong></p>
+                                            <small class="text-muted">${{ token.value_usd|default('0.00') }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <p class="mb-0 {% if token.change|default(0) >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                {{ token.change|default('0.00') }}%
+                                                <i class="fas fa-{% if token.change|default(0) >= 0 %}caret-up{% else %}caret-down{% endif %}"></i>
+                                            </p>
+                                            <small class="text-muted">${{ token.price|default('0.00') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 d-flex">
+                                        <a href="/dex?pair={{ token.symbol }}/USDC" class="btn btn-sm btn-outline-primary me-2">Trade</a>
+                                        <a href="/swap?from={{ token.symbol }}" class="btn btn-sm btn-outline-success me-2">Swap</a>
+                                        <button class="btn btn-sm btn-outline-secondary send-token" data-token="{{ token.symbol }}">
+                                            Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Activity Tab -->
+                <div class="tab-pane fade" id="activity" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Recent Activity</h5>
+                        <div>
+                            <select class="form-select form-select-sm" id="activityFilter" style="width: 150px;">
+                                <option value="all">All Activities</option>
+                                <option value="send">Send</option>
+                                <option value="receive">Receive</option>
+                                <option value="swap">Swap</option>
+                                <option value="stake">Stake</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="list-group list-group-flush">
+                            {% for tx in transactions|default([]) %}
+                            <div class="list-group-item transaction-item {{ tx.type }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            {% if tx.type == 'send' %}
+                                                <i class="fas fa-arrow-up text-danger fa-lg"></i>
+                                            {% elif tx.type == 'receive' %}
+                                                <i class="fas fa-arrow-down text-success fa-lg"></i>
+                                            {% elif tx.type == 'swap' %}
+                                                <i class="fas fa-exchange-alt text-primary fa-lg"></i>
+                                            {% elif tx.type == 'stake' %}
+                                                <i class="fas fa-lock text-warning fa-lg"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">
+                                                {% if tx.type == 'send' %}
+                                                    Sent {{ tx.amount }} {{ tx.token }}
+                                                {% elif tx.type == 'receive' %}
+                                                    Received {{ tx.amount }} {{ tx.token }}
+                                                {% elif tx.type == 'swap' %}
+                                                    Swapped {{ tx.from_amount }} {{ tx.from_token }} for {{ tx.to_amount }} {{ tx.to_token }}
+                                                {% elif tx.type == 'stake' %}
+                                                    Staked {{ tx.amount }} {{ tx.token }}
+                                                {% endif %}
+                                            </h6>
+                                            <small class="text-muted">{{ tx.date }} • {{ tx.time }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ tx.status_color }}">{{ tx.status }}</span>
+                                        <button class="btn btn-sm btn-link p-0 ms-2 transaction-details" data-tx-id="{{ tx.id }}">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Transaction Details (Hidden by Default) -->
+                                <div class="transaction-details-content mt-3" style="display: none;" id="tx-details-{{ tx.id }}">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Transaction ID:</strong></p>
+                                                    <p class="text-muted small address-copy" data-clipboard-text="{{ tx.hash }}">
+                                                        {{ tx.hash }}
+                                                        <i class="fas fa-copy ms-1"></i>
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Confirmations:</strong></p>
+                                                    <p class="mb-0">{{ tx.confirmations }}/{{ tx.required_confirmations }}</p>
+                                                    <div class="progress" style="height: 5px;">
+                                                        <div class="progress-bar bg-success" style="width: {{ (tx.confirmations / tx.required_confirmations * 100)|int }}%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>From:</strong></p>
+                                                    <p class="text-muted small address-copy" data-clipboard-text="{{ tx.from_address }}">
+                                                        {{ tx.from_address }}
+                                                        <i class="fas fa-copy ms-1"></i>
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>To:</strong></p>
+                                                    <p class="text-muted small address-copy" data-clipboard-text="{{ tx.to_address }}">
+                                                        {{ tx.to_address }}
+                                                        <i class="fas fa-copy ms-1"></i>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Fee:</strong></p>
+                                                    <p class="mb-0">{{ tx.fee }} MARBLE</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Memo:</strong></p>
+                                                    <p class="mb-0">{{ tx.memo|default('No memo') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-center mt-3">
+                                                <a href="/explorer/tx/{{ tx.hash }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    View on Explorer <i class="fas fa-external-link-alt ms-1"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="/transactions" class="btn btn-outline-primary">View All Transactions</a>
+                    </div>
+                </div>
+                
+                <!-- Deposit Tab -->
+                <div class="tab-pane fade" id="deposit" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Deposit Funds</h5>
+                            
+                            <div class="mb-3">
+                                <label for="depositToken" class="form-label">Select Token</label>
+                                <select class="form-select" id="depositToken">
+                                    {% for token in tokens|default([]) %}
+                                    <option value="{{ token.symbol }}">{{ token.name }} ({{ token.symbol }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Network Selection (if applicable) -->
+                            <div class="mb-3" id="networkSelectContainer">
+                                <label for="depositNetwork" class="form-label">Select Network</label>
+                                <select class="form-select" id="depositNetwork">
+                                    <option value="marble">Marble Blockchain</option>
+                                    <option value="ethereum">Ethereum</option>
+                                    <option value="bsc">BSC</option>
+                                    <option value="solana">Solana</option>
+                                </select>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Only send <span id="depositTokenName">MARBLE</span> to this address. Sending other tokens may result in permanent loss.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 text-center">
+                            <div class="qr-container mb-3">
+                                <div id="depositQRCode"></div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="depositAddress" value="{{ wallet_address|default('marble1234567890abcdef1234567890abcdef') }}" readonly>
+                                    <button class="btn btn-outline-secondary copy-address" type="button" data-clipboard-target="#depositAddress">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" id="showDepositInstructions">
+                                    <i class="fas fa-info-circle me-2"></i>Show Deposit Instructions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Deposit Instructions (Hidden by Default) -->
+                    <div class="row mt-4" id="depositInstructions" style="display: none;">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">How to Deposit</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ol>
+                                        <li class="mb-2">Copy your deposit address above or scan the QR code with your wallet app.</li>
+                                        <li class="mb-2">From your external wallet or exchange, initiate a withdrawal to the copied address.</li>
+                                        <li class="mb-2">Make sure you are sending on the correct network to avoid losing your funds.</li>
+                                        <li class="mb-2">Enter the amount you wish to deposit and confirm the transaction.</li>
+                                        <li class="mb-2">Wait for the transaction to be confirmed on the blockchain (usually takes 1-2 minutes on Marble Blockchain).</li>
+                                        <li>Once confirmed, your funds will be available in your wallet.</li>
+                                    </ol>
+                                    
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Important:</strong> Always verify the deposit address before sending any funds. Transactions on the blockchain are irreversible.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Withdraw Tab -->
+                <div class="tab-pane fade" id="withdraw" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <h5 class="mb-3">Withdraw Funds</h5>
+                            
+                            <form id="withdrawForm">
+                                <div class="mb-3">
+                                    <label for="withdrawToken" class="form-label">Select Token</label>
+                                    <select class="form-select" id="withdrawToken" required>
+                                        {% for token in tokens|default([]) %}
+                                        <option value="{{ token.symbol }}" data-balance="{{ token.balance }}">
+                                            {{ token.name }} ({{ token.symbol }}) - Available: {{ token.balance }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="withdrawNetwork" class="form-label">Select Network</label>
+                                    <select class="form-select" id="withdrawNetwork" required>
+                                        <option value="marble">Marble Blockchain</option>
+                                        <option value="ethereum">Ethereum</option>
+                                        <option value="bsc">BSC</option>
+                                        <option value="solana">Solana</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="withdrawAddress" class="form-label">Destination Address</label>
+                                    <input type="text" class="form-control" id="withdrawAddress" placeholder="Enter wallet address" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="withdrawAmount" class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="withdrawAmount" placeholder="0.00" step="0.000001" min="0" required>
+                                        <span class="input-group-text" id="withdrawTokenSymbol">MARBLE</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-2">
+                                        <small class="text-muted">
+                                            Available: <span id="withdrawAvailable">0.00</span>
+                                        </small>
+                                        <div>
+                                            <button type="button" class="btn btn-link btn-sm p-0 me-2 withdraw-percent" data-percent="25">25%</button>
+                                            <button type="button" class="btn btn-link btn-sm p-0 me-2 withdraw-percent" data-percent="50">50%</button>
+                                            <button type="button" class="btn btn-link btn-sm p-0 me-2 withdraw-percent" data-percent="75">75%</button>
+                                            <button type="button" class="btn btn-link btn-sm p-0 withdraw-percent" data-percent="100">Max</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="withdrawMemo" class="form-label">Memo (Optional)</label>
+                                    <input type="text" class="form-control" id="withdrawMemo" placeholder="Add a note (e.g., exchange deposit)">
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Network Fee:</span>
+                                            <span id="networkFee">0.001 MARBLE</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>You will receive:</span>
+                                            <span id="receiveAmount">0.00 MARBLE</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-2"></i>Withdraw Funds
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Recent Withdrawals</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush">
+                                        {% for tx in withdraw_history|default([]) %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <strong>{{ tx.amount }} {{ tx.token }}</strong>
+                                                    <div><small class="text-muted">{{ tx.date }}</small></div>
+                                                </div>
+                                                <span class="badge bg-{{ tx.status_color }}">{{ tx.status }}</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar with Charts -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Portfolio Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="token-distribution">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Price Alerts</h5>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAlertModal">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for alert in price_alerts|default([]) %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ alert.token }}</h6>
+                                    <p class="mb-0 small">
+                                        {% if alert.condition == 'above' %}
+                                        <i class="fas fa-arrow-up text-success me-1"></i> Above ${{ alert.price }}
+                                        {% else %}
+                                        <i class="fas fa-arrow-down text-danger me-1"></i> Below ${{ alert.price }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-link p-0 me-2 edit-alert" data-alert-id="{{ alert.id }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link p-0 text-danger delete-alert" data-alert-id="{{ alert.id }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if not price_alerts|default([]) %}
+                        <div class="list-group-item">
+                            <div class="text-center p-3">
+                                <p class="text-muted mb-0">No price alerts set</p>
+                                <small>Create an alert to get notified about price changes</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Alert Modal -->
+<div class="modal fade" id="addAlertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalTitle">Create Price Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="alertForm">
+                    <input type="hidden" id="alertId" value="">
+                    
+                    <div class="mb-3">
+                        <label for="alertToken" class="form-label">Select Token</label>
+                        <select class="form-select" id="alertToken" required>
+                            {% for token in tokens|default([]) %}
+                            <option value="{{ token.symbol }}">{{ token.name }} ({{ token.symbol }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="alertCondition" class="form-label">Alert Condition</label>
+                        <select class="form-select" id="alertCondition" required>
+                            <option value="above">Price Goes Above</option>
+                            <option value="below">Price Goes Below</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="alertPrice" class="form-label">Target Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="alertPrice" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-text" id="currentPriceInfo">
+                            Current price: <span id="currentTokenPrice">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="alertNotification" class="form-label">Notification Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="emailNotify" checked>
+                            <label class="form-check-label" for="emailNotify">Email</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="browserNotify">
+                            <label class="form-check-label" for="browserNotify">Browser</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveAlert">Save Alert</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Wallet Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Data to Export</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exportBalances" checked>
+                        <label class="form-check-label" for="exportBalances">Token Balances</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exportTransactions" checked>
+                        <label class="form-check-label" for="exportTransactions">Transaction History</label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Date Range</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="exportStartDate" class="form-label small">Start Date</label>
+                            <input type="date" class="form-control" id="exportStartDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="exportEndDate" class="form-label small">End Date</label>
+                            <input type="date" class="form-control" id="exportEndDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Export Format</label>
+                    <select class="form-select" id="exportFormat">
+                        <option value="csv">CSV</option>
+                        <option value="json">JSON</option>
+                        <option value="pdf">PDF</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="exportData">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- QR Code library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<!-- Clipboard.js for copy functionality -->
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+<!-- Chart.js for portfolio chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize clipboard functionality
+        new ClipboardJS('.copy-address');
+        new ClipboardJS('.address-copy');
+        
+        // Set up copy address feedback
+        document.querySelectorAll('.copy-address').forEach(button => {
+            button.addEventListener('click', function() {
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                }, 2000);
+            });
+        });
+        
+        // Initialize QR code
+        const qrCode = new QRCode(document.getElementById("depositQRCode"), {
+            text: document.getElementById("depositAddress").value,
+            width: 180,
+            height: 180,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // Update QR code when token or network changes
+        document.getElementById('depositToken').addEventListener('change', updateDepositInfo);
+        document.getElementById('depositNetwork').addEventListener('change', updateDepositInfo);
+        
+        function updateDepositInfo() {
+            const token = document.getElementById('depositToken').value;
+            const network = document.getElementById('depositNetwork').value;
+            
+            // Update token name in alert
+            document.getElementById('depositTokenName').textContent = token;
+            
+            // In a real implementation, this would fetch the correct deposit address for the selected token and network
+            // For now, we'll just simulate a different address
+            const newAddress = `${network}1${token.toLowerCase()}${Math.random().toString(36).substring(2, 10)}`;
+            document.getElementById('depositAddress').value = newAddress;
+            
+            // Update QR code
+            qrCode.makeCode(newAddress);
+        }
+        
+        // Toggle deposit instructions
+        document.getElementById('showDepositInstructions').addEventListener('click', function() {
+            const instructions = document.getElementById('depositInstructions');
+            if (instructions.style.display === 'none') {
+                instructions.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-chevron-up me-2"></i>Hide Deposit Instructions';
+            } else {
+                instructions.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-info-circle me-2"></i>Show Deposit Instructions';
+            }
+        });
+        
+        // Handle withdraw percentage buttons
+        document.querySelectorAll('.withdraw-percent').forEach(button => {
+            button.addEventListener('click', function() {
+                const percent = parseFloat(this.dataset.percent);
+                const token = document.getElementById('withdrawToken');
+                const selectedOption = token.options[token.selectedIndex];
+                const balance = parseFloat(selectedOption.dataset.balance);
+                
+                if (!isNaN(balance)) {
+                    const amount = (balance * percent / 100).toFixed(6);
+                    document.getElementById('withdrawAmount').value = amount;
+                    updateReceiveAmount();
+                }
+            });
+        });
+        
+        // Update withdraw available amount when token changes
+        document.getElementById('withdrawToken').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const balance = parseFloat(selectedOption.dataset.balance);
+            const symbol = selectedOption.value;
+            
+            document.getElementById('withdrawAvailable').textContent = balance;
+            document.getElementById('withdrawTokenSymbol').textContent = symbol;
+            document.getElementById('receiveAmount').textContent = `0.00 ${symbol}`;
+            
+            // Update network fee based on selected token
+            updateNetworkFee();
+        });
+        
+        // Update network fee when network changes
+        document.getElementById('withdrawNetwork').addEventListener('change', updateNetworkFee);
+        
+        function updateNetworkFee() {
+            const token = document.getElementById('withdrawToken').value;
+            const network = document.getElementById('withdrawNetwork').value;
+            
+            // In a real implementation, this would fetch the actual network fee for the selected token and network
+            let fee;
+            switch(network) {
+                case 'ethereum':
+                    fee = '0.005 ETH';
+                    break;
+                case 'bsc':
+                    fee = '0.001 BNB';
+                    break;
+                case 'solana':
+                    fee = '0.000005 SOL';
+                    break;
+                default:
+                    fee = '0.001 MARBLE';
+            }
+            
+            document.getElementById('networkFee').textContent = fee;
+            updateReceiveAmount();
+        }
+        
+        // Update receive amount when withdraw amount changes
+        document.getElementById('withdrawAmount').addEventListener('input', updateReceiveAmount);
+        
+        function updateReceiveAmount() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const token = document.getElementById('withdrawToken').value;
+            
+            if (!isNaN(amount)) {
+                // In a real implementation, this would subtract the network fee if the fee is in the same token
+                document.getElementById('receiveAmount').textContent = `${amount.toFixed(6)} ${token}`;
+            } else {
+                document.getElementById('receiveAmount').textContent = `0.00 ${token}`;
+            }
+        }
+        
+        // Initialize portfolio chart
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        
+        // Sample data - in production this would come from the server
+        const portfolioData = {
+            labels: {{ tokens|map(attribute='name')|list|default(['MARBLE', 'USDC', 'ETH', 'BTC', 'Other'])|tojson }},
+            datasets: [{
+                data: {{ tokens|map(attribute='value_usd')|list|default([500, 300, 200, 100, 50])|tojson }},
+                backgroundColor: [
+                    '#1a73e8',
+                    '#0f9d58',
+                    '#db4437',
+                    '#f4b400',
+                    '#4285f4'
+                ],
+                borderWidth: 0
+            }]
+        };
+        
+        const portfolioChart = new Chart(ctx, {
+            type: 'doughnut',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: $${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Token search functionality
+        document.getElementById('assetSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            document.querySelectorAll('.token-item').forEach(item => {
+                const tokenName = item.querySelector('h5').textContent.toLowerCase();
+                const tokenSymbol = item.querySelector('small').textContent.toLowerCase();
+                
+                if (tokenName.includes(searchTerm) || tokenSymbol.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Transaction details toggle
+        document.querySelectorAll('.transaction-details').forEach(button => {
+            button.addEventListener('click', function() {
+                const txId = this.dataset.txId;
+                const detailsContent = document.getElementById(`tx-details-${txId}`);
+                
+                if (detailsContent.style.display === 'none') {
+                    detailsContent.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                } else {
+                    detailsContent.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                }
+            });
+        });
+        
+        // Activity filter
+        document.getElementById('activityFilter').addEventListener('change', function() {
+            const filter = this.value;
+            
+            document.querySelectorAll('.transaction-item').forEach(item => {
+                if (filter === 'all' || item.classList.contains(filter)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Send token buttons
+        document.querySelectorAll('.send-token').forEach(button => {
+            button.addEventListener('click', function() {
+                const token = this.dataset.token;
+                // Switch to withdraw tab
+                document.getElementById('withdraw-tab').click();
+                // Select the token in the dropdown
+                const tokenSelect = document.getElementById('withdrawToken');
+                for (let i = 0; i < tokenSelect.options.length; i++) {
+                    if (tokenSelect.options[i].value === token) {
+                        tokenSelect.selectedIndex = i;
+                        tokenSelect.dispatchEvent(new Event('change'));
+                        break;
+                    }
+                }
+                // Focus on the address field
+                setTimeout(() => {
+                    document.getElementById('withdrawAddress').focus();
+                }, 100);
+            });
+        });
+        
+        // Handle withdraw form submission
+        document.getElementById('withdrawForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const token = document.getElementById('withdrawToken').value;
+            const amount = document.getElementById('withdrawAmount').value;
+            const address = document.getElementById('withdrawAddress').value;
+            
+            // Simple validation
+            if (!address || !amount || parseFloat(amount) <= 0) {
+                alert('Please enter a valid address and amount');
+                return;
+            }
+            
+            // Show confirmation dialog
+            if (confirm(`Are you sure you want to withdraw ${amount} ${token} to ${address}?`)) {
+                // In a real implementation, this would make an API call to process the withdrawal
+                const loadingBtn = document.querySelector('#withdrawForm button[type="submit"]');
+                const originalHtml = loadingBtn.innerHTML;
+                loadingBtn.disabled = true;
+                loadingBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                // Simulate API call
+                setTimeout(() => {
+                    loadingBtn.disabled = false;
+                    loadingBtn.innerHTML = originalHtml;
+                    
+                    // Show success message
+                    alert(`Withdrawal of ${amount} ${token} initiated successfully!`);
+                    
+                    // Reset form
+                    document.getElementById('withdrawAddress').value = '';
+                    document.getElementById('withdrawAmount').value = '';
+                    document.getElementById('withdrawMemo').value = '';
+                }, 2000);
+            }
+        });
+        
+        // Price alert handlers
+        document.querySelectorAll('.edit-alert').forEach(button => {
+            button.addEventListener('click', function() {
+                const alertId = this.dataset.alertId;
+                
+                // In a real implementation, this would fetch the alert details from the server
+                // For now, we'll simulate with dummy data
+                document.getElementById('alertId').value = alertId;
+                document.getElementById('alertModalTitle').textContent = 'Edit Price Alert';
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('addAlertModal'));
+                modal.show();
+            });
+        });
+        
+        document.querySelectorAll('.delete-alert').forEach(button => {
+            button.addEventListener('click', function() {
+                const alertId = this.dataset.alertId;
+                
+                if (confirm('Are you sure you want to delete this price alert?')) {
+                    // In a real implementation, this would make an API call to delete the alert
+                    console.log(`Deleting alert ${alertId}`);
+                    
+                    // Simulate success and remove the alert from the UI
+                    this.closest('.list-group-item').remove();
+                    
+                    // If no alerts left, show the "no alerts" message
+                    if (document.querySelectorAll('.price-alerts .list-group-item').length === 0) {
+                        const noAlertsHtml = `
+                        <div class="list-group-item">
+                            <div class="text-center p-3">
+                                <p class="text-muted mb-0">No price alerts set</p>
+                                <small>Create an alert to get notified about price changes</small>
+                            </div>
+                        </div>`;
+                        document.querySelector('.price-alerts .list-group').innerHTML = noAlertsHtml;
+                    }
+                }
+            });
+        });
+        
+        // Save alert
+        document.getElementById('saveAlert').addEventListener('click', function() {
+            const alertId = document.getElementById('alertId').value;
+            const token = document.getElementById('alertToken').value;
+            const condition = document.getElementById('alertCondition').value;
+            const price = document.getElementById('alertPrice').value;
+            const emailNotify = document.getElementById('emailNotify').checked;
+            const browserNotify = document.getElementById('browserNotify').checked;
+            
+            // Simple validation
+            if (!token || !price || parseFloat(price) <= 0) {
+                alert('Please select a token and enter a valid price');
+                return;
+            }
+            
+            // In a real implementation, this would make an API call to save the alert
+            console.log(`Saving alert for ${token} ${condition} $${price}`);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addAlertModal'));
+            modal.hide();
+            
+            // Show success message
+            alert(`Price alert for ${token} saved successfully!`);
+            
+            // In a real implementation, this would refresh the alerts list
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        });
+        
+        // Export data
+        document.getElementById('exportData').addEventListener('click', function() {
+            const exportBalances = document.getElementById('exportBalances').checked;
+            const exportTransactions = document.getElementById('exportTransactions').checked;
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+            const format = document.getElementById('exportFormat').value;
+            
+            // Simple validation
+            if (!exportBalances && !exportTransactions) {
+                alert('Please select at least one data type to export');
+                return;
+            }
+            
+            // In a real implementation, this would make an API call to generate the export file
+            const loadingBtn = document.getElementById('exportData');
+            const originalHtml = loadingBtn.innerHTML;
+            loadingBtn.disabled = true;
+            loadingBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                loadingBtn.disabled = false;
+                loadingBtn.innerHTML = originalHtml;
+                
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+                modal.hide();
+                
+                // Generate a fake download link
+                const a = document.createElement('a');
+                a.href = '#';
+                a.download = `marble_wallet_export_${new Date().toISOString().slice(0, 10)}.${format}`;
+                a.click();
+                
+                // Show success message
+                alert(`Wallet data exported successfully as ${format.toUpperCase()}!`);
+            }, 2000);
+        });
+        
+        // Initialize the page with default values
+        if (document.getElementById('withdrawToken')) {
+            document.getElementById('withdrawToken').dispatchEvent(new Event('change'));
+        }
+        
+        // Refresh wallet button
+        document.getElementById('refreshWallet').addEventListener('click', function() {
+            const btn = this;
+            const originalHtml = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Refreshing...';
+            
+            // In a real implementation, this would refresh the wallet data
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                
+                // Reload the page
+                location.reload();
+            }, 1500);
+        });
+    });
+</script>
+{% endblock %}

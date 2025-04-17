@@ -1,0 +1,32 @@
+INFO:     Started server process [16792]
+INFO:     Waiting for application startup.
+2025-04-06 13:07:51,968 - marble_dex - INFO - Starting Marble Blockchain DEX...
+2025-04-06 13:07:51,972 - MarbleBlockchain - INFO - PoH initialized with seed: 048700e4c43588c4dcc3452c8b5fb13bb57b55dd4097d87c3f2fb329e2578393
+2025-04-06 13:07:51,975 - MarbleBlockchain - INFO - P2P network initialized with node ID: 6f941164-0956-42c5-92c4-faaaf8c9a247
+2025-04-06 13:07:51,979 - MarbleBlockchain - INFO - Marble Blockchain initialized with network mode: MAINNET
+2025-04-06 13:07:51,983 - marble_dex - INFO - Initializing blockchain...
+2025-04-06 13:07:51,986 - MarbleBlockchain - INFO - P2P server listening on 0.0.0.0:9090
+2025-04-06 13:07:52,010 - MarbleBlockchain - ERROR - Failed to connect to peer seed1.marbleblockchain.io:9090: [Errno 11001] getaddrinfo failed
+2025-04-06 13:07:52,013 - MarbleBlockchain - ERROR - Failed to connect to peer seed2.marbleblockchain.io:9090: [Errno 11001] getaddrinfo failed
+2025-04-06 13:07:52,016 - MarbleBlockchain - ERROR - Failed to connect to peer seed3.marbleblockchain.io:9090: [Errno 11001] getaddrinfo failed
+2025-04-06 13:07:52,017 - MarbleBlockchain - INFO - Connected to 0 bootstrap nodes
+2025-04-06 13:07:52,017 - MarbleBlockchain - INFO - P2P network started on 0.0.0.0:9090
+2025-04-06 13:07:52,038 - MarbleBlockchain - INFO - Loaded blockchain state with 1 blocks
+2025-04-06 13:07:52,039 - MarbleBlockchain - INFO - Started node in regular mode
+2025-04-06 13:07:52,039 - MarbleBlockchain - INFO - Marble Blockchain node started successfully
+2025-04-06 13:07:52,040 - marble_dex - INFO - Generating VMIA icons...
+2025-04-06 13:07:52,040 - MarbleMicroOS - INFO - Generating swap icon
+2025-04-06 13:07:52,041 - MarbleMicroOS - INFO - Ensured static directory exists at static
+2025-04-06 13:07:52,148 - MarbleMicroOS - INFO - Swap icon generated and saved to static/icon_swap.png
+2025-04-06 13:07:52,149 - MarbleMicroOS - INFO - Generating lock icon
+2025-04-06 13:07:52,150 - MarbleMicroOS - INFO - Ensured static directory exists at static
+2025-04-06 13:07:52,204 - MarbleMicroOS - INFO - Lock icon generated and saved to static/icon_lock.png
+2025-04-06 13:07:52,204 - MarbleBlockchain - WARNING - Cannot request blocks: no connected peers
+2025-04-06 13:07:53,206 - MarbleBlockchain - INFO - Running VMIA task 'swap' for validator your-address-123
+2025-04-06 13:07:53,207 - MarbleBlockchain - INFO - CPU effort: 47.4%
+2025-04-06 13:07:53,208 - MarbleBlockchain - INFO - VMIA task completed with reward 0.00474 MARBLE
+INFO:     Application startup complete.
+2025-04-06 13:07:53,209 - MarbleBlockchain - WARNING - Cannot request blocks: no connected peers
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2025-04-06 13:07:54,222 - MarbleBlockchain - WARNING - Cannot request blocks: no connected peers
+2025-04-06 13:07:55,225 - MarbleBlockchain - WARNING - Failed to synchronize blockchain with network

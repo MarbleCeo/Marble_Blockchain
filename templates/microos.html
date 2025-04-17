@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MicroOS VMIA</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dex-container">
+        <h1>MicroOS VMIA</h1>
+        <p>CPU Usage: {{ vmia_status.cpu_percent }}%</p>
+        <p>Memory Usage: {{ vmia_status.memory_percent }}%</p>
+        <h2>VMIA Icons</h2>
+        <img src="{{ vmia_status.icons[0] }}" class="icon" alt="Swap Icon">
+        <img src="{{ vmia_status.icons[1] }}" class="icon" alt="Lock Icon">
+        <a href="/">Back to DEX</a>
+    </div>
+</body>
+</html>
+

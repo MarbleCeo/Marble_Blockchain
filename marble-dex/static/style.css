@@ -1,0 +1,454 @@
+/* Marble DEX - Main Stylesheet
+   A modern, clean interface for cryptocurrency trading */
+
+:root {
+  /* Primary color scheme */
+  --primary: #6E45E2;
+  --primary-light: #8D6BF2;
+  --primary-dark: #4F2BB8;
+  --secondary: #88E5CE;
+  --secondary-light: #A5EFDE;
+  --secondary-dark: #5ECBB0;
+  
+  /* Trading colors */
+  --buy: #25B97A;
+  --buy-light: #E6F7F0;
+  --buy-dark: #1B9B64;
+  --sell: #E35D6A;
+  --sell-light: #FAEBEC;
+  --sell-dark: #C73D4A;
+  
+  /* UI colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FE;
+  --bg-tertiary: #ECEEF6;
+  --text-primary: #263042;
+  --text-secondary: #5C6A82;
+  --text-tertiary: #9AA5B8;
+  --border: #E0E4EB;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  /* Fonts */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* General Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+/* Layout Components */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.card {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  margin-bottom: var(--spacing-lg);
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Trading Interface */
+.trading-interface {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+@media (max-width: 1024px) {
+  .trading-interface {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Order Book */
+.order-book {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.order-book-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.order-book-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.order-book-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.order-book-tab {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.order-book-tab.active {
+  background-color: var(--primary-light);
+  color: white;
+}
+
+.order-book-content {
+  padding: var(--spacing-md);
+}
+
+.order-book-entries {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.order-book-entries th {
+  text-align: right;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.order-book-entries td {
+  text-align: right;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+}
+
+.order-book-buy {
+  color: var(--buy);
+}
+
+.order-book-buy-bg {
+  position: relative;
+}
+
+.order-book-buy-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--buy-light);
+  z-index: -1;
+  border-radius: var(--radius-sm);
+}
+
+.order-book-sell {
+  color: var(--sell);
+}
+
+.order-book-sell-bg {
+  position: relative;
+}
+
+.order-book-sell-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--sell-light);
+  z-index: -1;
+  border-radius: var(--radius-sm);
+}
+
+.spread {
+  text-align: center;
+  padding: var(--spacing-sm);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* Trading Form */
+.trading-form {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: var(--spacing-lg);
+}
+
+.trading-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-tertiary);
+  padding: var(--spacing-xs);
+}
+
+.trading-tab {
+  flex: 1;
+  text-align: center;
+  padding: var(--spacing-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.trading-tab.buy {
+  color: var(--buy);
+}
+
+.trading-tab.sell {
+  color: var(--sell);
+}
+
+.trading-tab.active.buy {
+  background-color: var(--buy);
+  color: white;
+}
+
+.trading-tab.active.sell {
+  background-color: var(--sell);
+  color: white;
+}
+
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(110, 69, 226, 0.1);
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+}
+
+.input-addon {
+  background-color: var(--bg-tertiary);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.input-group .form-control {
+  border-right: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.slider {
+  width: 100%;
+  margin: var(--spacing-md) 0;
+}
+
+.percentage-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.percentage-button {
+  background-color: var(--bg-tertiary);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.percentage-button:hover {
+  background-color: var(--border);
+}
+
+.button {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button.buy {
+  background-color: var(--buy);
+  color: white;
+}
+
+.button.buy:hover {
+  background-color: var(--buy-dark);
+}
+
+.button.sell {
+  background-color: var(--sell);
+  color: white;
+}
+
+.button.sell:hover {
+  background-color: var(--sell-dark);
+}
+
+.button.connect-wallet {
+  background-color: var(--primary);
+  color: white;
+}
+
+.button.connect-wallet:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Market Stats */
+.market-stats {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Price Chart */
+.price-chart {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  height: 400px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.timeframe-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.timeframe-tab {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.timeframe-tab.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* Recent Trades */
+.recent-trades {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.trades-header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.trades-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+

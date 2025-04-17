@@ -1,0 +1,19 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #ff0000;
+  --primary-dark: #cc0000;
+}
+
+body {
+  @apply bg-gray-900 text-white;
+}
+
+.spatial-red {
+  background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+

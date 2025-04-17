@@ -1,0 +1,919 @@
+:root {
+    --primary-color: #FF0000;
+    --secondary-color: #CC0000;
+    --background-dark: #1A1A1A;
+    --background-light: #2A2A2A;
+    --text-color: #FFFFFF;
+    --text-secondary: #CCCCCC;
+    --border-radius: 10px;
+    --box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-dark);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.dex-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    color: white;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+h1, h2, h3 {
+    color: var(--text-color);
+    margin-top: 0;
+}
+
+button {
+    background-color: var(--background-dark);
+    color: var(--text-color);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--background-light);
+}
+
+input, select {
+    background-color: var(--background-dark);
+    color: var(--text-color);
+    border: 1px solid var(--secondary-color);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.orderbook-display {
+    background-color: var(--background-dark);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-top: 10px;
+    overflow: auto;
+    max-height: 300px;
+}
+
+.orderbook-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.bids-container, .asks-container {
+    flex: 1;
+    margin: 0 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--background-light);
+}
+
+th {
+    color: var(--text-secondary);
+}
+
+.bid-price {
+    color: #00CC00;
+}
+
+.ask-price {
+    color: var(--primary-color);
+}
+
+.price-chart {
+    width: 100%;
+    max-height: 400px;
+    border-radius: var(--border-radius);
+    margin-top: 10px;
+}
+
+.wallet-section, .rpc-section {
+    background-color: var(--background-dark);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.trade-form, .orderbook-section, .chart-section, .lock-section {
+    background-color: var(--background-dark);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.microos-link {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.microos-link a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.microos-link a:hover {
+    text-decoration: underline;
+}
+
+/* Marble DEX Stylesheet
+ * A comprehensive stylesheet for the Marble Blockchain DEX with Solana integration
+ * Version 2.0.0
+ */
+
+/* ========== CSS Variables / Custom Properties ========== */
+:root {
+  /* Primary Color Palette - Red Theme */
+  --marble-red: #FF0000;
+  --marble-red-light: #FF6666;
+  --marble-red-lighter: #FFB3B3;
+  --marble-red-dark: #CC0000;
+  --marble-red-darker: #990000;
+  
+  /* Gradients */
+  --marble-gradient: linear-gradient(135deg, var(--marble-red-dark), var(--marble-red), var(--marble-red-light));
+  --marble-gradient-hover: linear-gradient(135deg, var(--marble-red-darker), var(--marble-red-dark), var(--marble-red));
+  
+  /* Background Colors */
+  --bg-primary: #1A1A1A;
+  --bg-secondary: #2A2A2A;
+  --bg-tertiary: #3A3A3A;
+  --bg-card: #252525;
+  --bg-input: #333333;
+  --bg-hover: #404040;
+  
+  /* Text Colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-tertiary: #999999;
+  --text-muted: #777777;
+  
+  /* Status Colors */
+  --success: #00CC88;
+  --success-light: #33FFB3;
+  --success-dark: #009966;
+  
+  --warning: #FFBB33;
+  --warning-light: #FFDD99;
+  --warning-dark: #CC9900;
+  
+  --error: #FF4444;
+  --error-light: #FF9999;
+  --error-dark: #CC0000;
+  
+  /* Shadow/Depth Effects */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.4);
+  
+  /* Red Shadows for Emphasis */
+  --shadow-red-sm: 0 2px 4px rgba(255, 0, 0, 0.2);
+  --shadow-red-md: 0 4px 8px rgba(255, 0, 0, 0.3);
+  --shadow-red-lg: 0 8px 16px rgba(255, 0, 0, 0.4);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+  
+  /* Spacing/Sizing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 3rem;
+  
+  /* Animation Timings */
+  --transition-fast: 0.15s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Z-index Layers */
+  --z-base: 1;
+  --z-dropdown: 10;
+  --z-sticky: 100;
+  --z-fixed: 1000;
+  --z-modal: 2000;
+  --z-popover: 5000;
+  --z-tooltip: 9000;
+}
+
+/* ========== Reset & Base Styles ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-weight: 400;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--marble-red);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--marble-red-light);
+  text-decoration: underline;
+}
+
+/* ========== Layout & Container Styles ========== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px;
+}
+
+.col {
+  flex: 1;
+  padding: 0 15px;
+}
+
+/* Grid Layout for Trading Interface */
+.trading-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: var(--space-lg);
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 1200px) {
+  .trading-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .orderbook-container {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .trading-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .orderbook-container {
+    grid-column: span 1;
+  }
+}
+
+/* ========== Card Component Styles ========== */
+.card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--marble-red);
+}
+
+.card-body {
+  margin-bottom: var(--space-md);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========== Form Elements ========== */
+.form-group {
+  margin-bottom: var(--space-md);
+}
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+  color: var(--text-secondary);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--marble-red);
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+}
+
+input:hover, select:hover, textarea:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ========== Button Styles ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-icon {
+  margin-right: var(--space-sm);
+}
+
+/* Button Variants */
+.btn-primary {
+  background-color: var(--marble-red);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--marble-red-dark);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: var(--success-dark);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: var(--bg-primary);
+}
+
+.btn-warning:hover {
+  background-color: var(--warning-dark);
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: var(--error-dark);
+}
+
+/* Button Sizes */
+.btn-sm {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: var(--space-md) var(--space-xl);
+  font-size: 1.125rem;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+/* ========== Navigation and Header ========== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md) 0;
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--marble-red);
+  text-decoration: none;
+}
+
+.navbar-nav {
+  display: flex;
+  list-style: none;
+}
+
+.nav-item {
+  margin-left: var(--space-lg);
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--marble-red);
+}
+
+.nav-link.active {
+  color: var(--marble-red);
+  font-weight: 500;
+}
+
+/* ========== Solana Integration Elements ========== */
+
+/* Wallet Connection Button */
+.wallet-connect-btn {
+  background: var(--marble-gradient);
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  box-shadow: var(--shadow-red-sm);
+}
+
+.wallet-connect-btn:hover {
+  background: var(--marble-gradient-hover);
+  box-shadow: var(--shadow-red-md);
+  transform: translateY(-2px);
+}
+
+.wallet-connect-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-red-sm);
+}
+
+.wallet-connect-btn .icon {
+  margin-right: var(--space-sm);
+}
+
+/* Wallet Info Display */
+.wallet-info {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 0, 0, 0.1);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.wallet-address {
+  font-family: monospace;
+  color: var(--text-secondary);
+  margin-right: var(--space-md);
+  font-size: 0.875rem;
+}
+
+.wallet-balance {
+  display: flex;
+  align-items: center;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-left: var(--space-sm);
+}
+
+.wallet-balance .icon {
+  margin-right: var(--space-xs);
+  color: var(--marble-red-light);
+}
+
+.wallet-balance.sol {
+  color: #9945FF; /* Solana color */
+}
+
+.wallet-balance.marble {
+  color: var(--marble-red-light);
+}
+
+/* Trading Form Styles */
+.trade-tabs {
+  display: flex;
+  margin-bottom: var
+
+/* Base theme */
+.main {
+    background: linear-gradient(135deg, #1a1b23 0%, #282932 100%);
+    color: white;
+}
+
+/* Layout containers */
+.header-container {
+    background: rgba(30, 30, 46, 0.9);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+.dex-container {
+    background: linear-gradient(45deg, #FF0000, #CC0000);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+    border: 1px solid rgba(255, 0, 0, 0.1);
+}
+
+/* Button styling */
+.stButton>button {
+    background-color: #FF0000 !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    width: 100%;
+}
+
+.stButton>button:hover {
+    background-color: #cc0000 !important;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* Form elements */
+.stTextInput input, .stNumberInput input {
+    background: #2A2A3C !important;
+    border: 1px solid #3A3A4C !important;
+    border-radius: 8px !important;
+    color: white !important;
+    padding: 12px !important;
+}
+
+/* AI Features */
+.mind-section {
+    border: 1px solid #FF0000;
+    border-radius: 12px;
+    padding: 1.5rem;
+    animation: pulse 2s infinite;
+    background: rgba(255, 0, 0, 0.05);
+    text-align: center;
+    font-weight: bold;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+.loading {
+    animation: shimmer 2s infinite linear;
+    background: linear-gradient(to right, #1E1E2E 4%, #2A2A3C 25%, #1E1E2E 36%);
+    background-size: 1000px 100%;
+}
+
+/* AI Predictions */
+.prediction-box {
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.confidence {
+    color: #FF0000;
+    font-weight: bold;
+}
+
+.confidence-indicator {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    height: 24px;
+    position: relative;
+    margin: 1rem 0;
+}
+
+.confidence-bar {
+    background: linear-gradient(90deg, #FF0000, #ff6666);
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s ease;
+}
+
+.confidence-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Trading signals */
+.trading-signal {
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+.trading-signal.bullish {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+}
+
+.trading-signal.bearish {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    color: #ff0000;
+}
+
+/* Order book */
+.dataframe {
+    background: #2A2A3C !important;
+    border-radius: 8px !important;
+    border: 1px solid #3A3A4C !important;
+    width: 100%;
+}
+
+.dataframe th {
+    background: #1E1E2E !important;
+    color: #FF0000 !important;
+    padding: 12px !important;
+    font-weight: bold !important;
+}
+
+.dataframe td {
+    color: white !important;
+    padding: 8px !important;
+}
+
+/* Tab styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    background-color: #1E1E2E;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    background-color: transparent;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    padding: 0 16px;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #FF0000 !important;
+}
+
+/* Icon class for consistent icon styling */
+.icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+/* WebSocket order book styling */
+.orderbook-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+
+.orderbook-table th, .orderbook-table td {
+    padding: 8px 12px;
+    text-align: right;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.orderbook-table th {
+    background-color: rgba(255, 0, 0, 0.1);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.orderbook-table tr:hover {
+    background-color: rgba(255, 0, 0, 0.05);
+}
+
+.ask-price {
+    color: var(--error);
+}
+
+.bid-price {
+    color: var(--success);
+}
+
+/* Price chart container */
+.price-chart-container {
+    width: 100%;
+    margin: 20px 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.price-chart-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* WebSocket connection status */
+.ws-status {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.ws-status.connected {
+    background-color: var(--success);
+}
+
+.ws-status.disconnected {
+    background-color: var(--error);
+}
+
+.ws-status.connecting {
+    background-color: var(--warning);
+}
+
+/* RPC selector styling */
+.rpc-selector {
+    width: 100%;
+    padding: 8px 12px;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+}
+
+.rpc-selector:focus {
+    border-color: var(--marble-red);
+    outline: none;
+}
+
+/* Lock coins section */
+.lock-container {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.lock-container button {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.lock-container .icon {
+    margin-left: 8px;
+}
+
+/* Wallet connection box */
+.wallet-box {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 20px;
+}
+
+.wallet-address-display {
+    font-family: monospace;
+    word-break: break-all;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+}

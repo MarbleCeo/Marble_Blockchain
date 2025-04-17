@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Marble Blockchain DEX{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+    {% block extra_css %}{% endblock %}
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --success-color: #0f9d58;
+            --danger-color: #db4437;
+            --warning-color: #f4b400;
+            --background-color: #f8f9fa;
+            --sidebar-bg: #343a40;
+            --sidebar-color: #fff;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-color);
+            min-height: calc(100vh - 56px);
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 5px;
+            transition: all 0.3s;
+            border-radius: 5px;
+            padding: 10px 15px;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            margin-top: 56px;
+            min-height: calc(100vh - 56px);
+            transition: all 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: -250px;
+            }
+            
+            .sidebar.active {
+                margin-left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.sidebar-active {
+                margin-left: 250px;
+            }
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            padding: 15px 20px;
+            font-weight: 500;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+        
+        .navbar-toggler {
+            border: none;
+        }
+        
+        /* Custom button styles */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: white;
+        }
+        
+        /* Footer styling */
+        footer {
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-color);
+            text-align: center;
+            padding: 15px 0;
+            margin-top: auto;
+            width: 100%;
+        }
+        
+        /* Custom alert styling */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom badge styling */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Loadings spinner */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler me-2" type="button" id="sidebar-toggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-cube me-2"></i>Marble DEX
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- Nav items will be populated here -->
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <div class="me-3 text-light">
+                        <span class="badge bg-success connection-status">
+                            <i class="fas fa-signal me-1"></i>Connected
+                        </span>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="walletDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-wallet me-1"></i>
+                            <span id="wallet-address">{{ wallet_address|default('Connect Wallet') }}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="walletDropdown">
+                            {% if wallet_address %}
+                                <li><a class="dropdown-item" href="/wallet"><i class="fas fa-wallet me-2"></i>My Wallet</a></li>
+                                <li><a class="dropdown-item" href="/transactions"><i class="fas fa-exchange-alt me-2"></i>Transactions</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/disconnect"><i class="fas fa-sign-out-alt me-2"></i>Disconnect</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="/connect"><i class="fas fa-plug me-2"></i>Connect Wallet</a></li>
+                                <li><a class="dropdown-item" href="/create-wallet"><i class="fas fa-plus-circle me-2"></i>Create New Wallet</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="pt-4 pb-3 px-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-th-large me-2"></i>Menu</h5>
+            </div>
+        </div>
+        <ul class="nav flex-column px-3">
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="/">
+                    <i class="fas fa-home"></i>Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'dex' %}active{% endif %}" href="/dex">
+                    <i class="fas fa-chart-line"></i>DEX Trading
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'swap' %}active{% endif %}" href="/swap">
+                    <i class="fas fa-exchange-alt"></i>Swap
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'wallet' %}active{% endif %}" href="/wallet">
+                    <i class="fas fa-wallet"></i>Wallet
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'transactions' %}active{% endif %}" href="/transactions">
+                    <i class="fas fa-history"></i>Transactions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'staking' %}active{% endif %}" href="/staking">
+                    <i class="fas fa-coins"></i>Staking
+                </a>
+            </li>
+            <li class="nav-item mt-3">
+                <div class="border-top pt-3 text-muted px-3">
+                    <small>System</small>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'explorer' %}active{% endif %}" href="/explorer">
+                    <i class="fas fa-search"></i>Block Explorer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_page == 'settings' %}active{% endif %}" href="/settings">
+                    <i class="fas fa-cog"></i>Settings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://docs.marbleblockchain.io" target="_blank">
+                    <i class="fas fa-question-circle"></i>Help
+                </a>
+            </li>
+        </ul>
+        
+        <div class="mt-4 px-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h6 class="card-title">Network Status</h6>
+                    <div class="d-flex justify-content-between">
+                        <small>Blockchain Height:</small>
+                        <small id="blockchain-height">{{ blockchain_height|default('...') }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small>TPS:</small>
+                        <small id="network-tps">{{ network_tps|default('...') }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small>Validators:</small>
+                        <small id="validator-count">{{ validator_count|default('...') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-3">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Marble Blockchain. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (for AJAX requests) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Toggle sidebar on mobile
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.main-content').classList.toggle('sidebar-active');
+        });
+        
+        // Function to update blockchain stats
+        function updateBlockchainStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('blockchain-height').textContent = data.height;
+                    document.getElementById('network-tps').textContent = data.tps;
+                    document.getElementById('validator-count').textContent = data.validators;
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
+        
+        // Update stats every 10 seconds
+        setInterval(updateBlockchainStats, 10000);
+        
+        // Check connection status
+        function checkConnection() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusBadge = document.querySelector('.connection-status');
+                    if (data.connected) {
+                        statusBadge.classList.remove('bg-danger');
+                        statusBadge.classList.remove('bg-danger');
+                        statusBadge.classList.add('bg-success');
+                        statusBadge.innerHTML = '<i class="fas fa-signal me-1"></i>Connected';
+                    } else {
+                        statusBadge.classList.remove('bg-success');
+                        statusBadge.classList.add('bg-danger');
+                        statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Disconnected';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking connection:', error);
+                    const statusBadge = document.querySelector('.connection-status');
+                    statusBadge.classList.remove('bg-success');
+                    statusBadge.classList.add('bg-danger');
+                    statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+                });
+        }
+        
+        // Check connection initially and then every 30 seconds
+        checkConnection();
+        setInterval(checkConnection, 30000);
+        
+        // Initialize any other custom functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Run any initialization code here
+            console.log('Marble DEX interface loaded');
+            
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+        
+        {% block extra_js %}{% endblock %}
+    </script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+{% extends "base.html" %}
+
+{% block title %}Token Swap - Marble Blockchain{% endblock %}
+
+{% block extra_css %}
+<style>
+    .token-selector {
+        cursor: pointer;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .token-selector:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .token-selector img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+    }
+    
+    .token-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .rate-info {
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 8px;
+        padding: 8px 12px;
+    }
+    
+    .swap-arrow {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-color);
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: -20px auto;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .swap-arrow:hover {
+        transform: rotate(180deg);
+        background-color: var(--secondary-color);
+    }
+    
+    .swap-route {
+        padding: 12px;
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .route-step {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    
+    .route-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 15px;
+        right: 0;
+        width: 100%;
+        border-top: 1px dashed rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+    
+    .route-token {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .route-arrow {
+        color: rgba(0, 0, 0, 0.3);
+        margin: 0 5px;
+        z-index: 2;
+    }
+    
+    .swap-history-item {
+        border-left: 3px solid var(--primary-color);
+        transition: all 0.2s;
+    }
+    
+    .swap-history-item:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .slippage-btn {
+        border-radius: 20px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .slippage-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Token Swap</h2>
+                <div>
+                    <a href="/wallet" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-wallet me-1"></i> Wallet
+                    </a>
+                    <a href="/dex" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-1"></i> Trading
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Swap Panel -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Swap Tokens</h5>
+                </div>
+                <div class="card-body">
+                    <form id="swapForm">
+                        <!-- From Token -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">From</label>
+                                    <small class="text-muted">
+                                        Balance: <span id="fromTokenBalance">{{ from_balance|default('0.00') }}</span>
+                                    </small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1 me-3">
+                                        <input type="number" class="form-control form-control-lg" id="fromAmount" placeholder="0.0" step="0.000001" min="0">
+                                    </div>
+                                    <div class="token-selector p-2" data-bs-toggle="modal" data-bs-target="#tokenSelectorModal" data-target="from">
+                                        <div class="d-flex align-items-center">
+                                            <div class="token-icon me-2" id="fromTokenIcon" style="background-color: {{ from_token.color|default('#1a73e8') }};">
+                                                {{ from_token.symbol|default('MARBLE')|first }}
+                                            </div>
+                                            <span id="fromTokenSymbol">{{ from_token.symbol|default('MARBLE') }}</span>
+                                            <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <div>
+                                        <button type="button" class="btn btn-link btn-sm p-0 me-2 from-percent" data-percent="25">25%</button>
+                                        <button type="button" class="btn btn-link btn-sm p-0 me-2 from-percent" data-percent="50">50%</button>
+                                        <button type="button" class="btn btn-link btn-sm p-0 me-2 from-percent" data-percent="75">75%</button>
+                                        <button type="button" class="btn btn-link btn-sm p-0 from-percent" data-percent="100">Max</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Swap Direction Arrow -->
+                        <div class="swap-arrow" id="swapDirection">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        
+                        <!-- To Token -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">To</label>
+                                    <small class="text-muted">
+                                        Balance: <span id="toTokenBalance">{{ to_balance|default('0.00') }}</span>
+                                    </small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1 me-3">
+                                        <input type="number" class="form-control form-control-lg" id="toAmount" placeholder="0.0" step="0.000001" min="0" readonly>
+                                    </div>
+                                    <div class="token-selector p-2" data-bs-toggle="modal" data-bs-target="#tokenSelectorModal" data-target="to">
+                                        <div class="d-flex align-items-center">
+                                            <div class="token-icon me-2" id="toTokenIcon" style="background-color: {{ to_token.color|default('#0f9d58') }};">
+                                                {{ to_token.symbol|default('USDC')|first }}
+                                            </div>
+                                            <span id="toTokenSymbol">{{ to_token.symbol|default('USDC') }}</span>
+                                            <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rate Information -->
+                        <div class="rate-info mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Rate:</span>
+                                <span id="swapRate">1 {{ from_token.symbol|default('MARBLE') }} = {{ swap_rate|default('0.00') }} {{ to_token.symbol|default('USDC') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Minimum received:</span>
+                                <span id="minReceived">0.00 {{ to_token.symbol|default('USDC') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Price impact:</span>
+                                <span id="priceImpact" class="text-success">< 0.01%</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Swap fee:</span>
+                                <span id="swapFee">0.00 {{ from_token.symbol|default('MARBLE') }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Slippage Settings -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Slippage Tolerance</label>
+                                <div>
+                                    <button type="button" class="btn btn-sm slippage-btn active" data-slippage="0.5">0.5%</button>
+                                    <button type="button" class="btn btn-sm slippage-btn" data-slippage="1.0">1.0%</button>
+                                    <button type="button" class="btn btn-sm slippage-btn" data-slippage="2.0">2.0%</button>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm slippage-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Custom
+                                        </button>
+                                        <div class="dropdown-menu p-2" style="min-width: 150px;">
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" class="form-control" id="customSlippage" placeholder="0.00" step="0.1" min="0.1" max="20">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="text-center mt-2">
+                                                <button type="button" class="btn btn-sm btn-primary" id="applyCustomSlippage">Apply</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Swap Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="swapButton">
+                                <i class="fas fa-exchange-alt me-2"></i>Swap Tokens
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Swap Route -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Swap Route</h5>
+                        <button class="btn btn-sm btn-outline-primary" id="findBestRoute">
+                            <i class="fas fa-route me-1"></i> Find Best Route
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="swap-route mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-primary">Best Route</span>
+                            </div>
+                            <div class="text-muted small">Expected Output: <strong>{{ expected_output|default('0.00') }} {{ to_token.symbol|default('USDC') }}</strong></div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center">
+                            {% set route_tokens = route_tokens|default(['MARBLE', 'WETH', 'USDC']) %}
+                            {% for token in route_tokens %}
+                                <div class="route-step">
+                                    <div class="route-token">
+                                        <strong>{{ token|first }}</strong>
+                                    </div>
+                                    {% if not loop.last %}
+                                    <div class="route-arrow">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="accordion" id="routeAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingAlternative">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlternative" aria-expanded="false" aria-controls="collapseAlternative">
+                                    Alternative Routes ({{ alternative_routes|default(2) }})
+                                </button>
+                            </h2>
+                            <div id="collapseAlternative" class="accordion-collapse collapse" aria-labelledby="headingAlternative" data-bs-parent="#routeAccordion">
+                                <div class="accordion-body">
+                                    <div class="swap-route mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <span class="badge bg-secondary">Alternative #1</span>
+                                            </div>
+                                            <div class="text-muted small">Expected Output: <strong>{{ alt1_output|default('0.00') }} {{ to_token.symbol|default('USDC') }}</strong></div>
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            {% set alt1_tokens = alt1_tokens|default(['MARBLE', 'WBTC', 'USDT', 'USDC']) %}
+                                            {% for token in alt1_tokens %}
+                                                <div class="route-step">
+                                                    <div class="route-token">
+                                                        <strong>{{ token|first }}</strong>
+                                                    </div>
+                                                    {% if not loop.last %}
+                                                    <div class="route-arrow">
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="swap-route">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <span class="badge bg-secondary">Alternative #2</span>
+                                            </div>
+                                            <div class="text-muted small">Expected Output: <strong>{{ alt2_output|default('0.00') }} {{ to_token.symbol|default('USDC') }}</strong></div>
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            {% set alt2_tokens = alt2_tokens|default(['MARBLE', 'USDC']) %}
+                                            {% for token in alt2_tokens %}
+                                                <div class="route-step">
+                                                    <div class="route-token">
+                                                        <strong>{{ token|first }}</strong>
+                                                    </div>
+                                                    {% if not loop.last %}
+                                                    <div class="route-arrow">
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Swap Preview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Swap Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">You pay:</span>
+                        <div class="text-end">
+                            <div class="fw-bold" id="previewFromAmount">0.00 {{ from_token.symbol|default('MARBLE') }}</div>
+                            <small class="text-muted" id="previewFromUSD">≈ $0.00</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="text-muted">You receive:</span>
+                        <div class="text-end">
+                            <div class="fw-bold" id="previewToAmount">0.00 {{ to_token.symbol|default('USDC') }}</div>
+                            <small class="text-muted" id="previewToUSD">≈ $0.00</small>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mb-0" id="swapInfoBox">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Enter an amount to see swap details
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Swaps -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Swaps</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for swap in recent_swaps|default([]) %}
+                        <div class="list-group-item swap-history-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-0">
+                                        <span class="fw-bold">{{ swap.from_amount }} {{ swap.from_token }}</span> 
+                                        <i class="fas fa-arrow-right mx-1 text-muted"></i> 
+                                        <span class="fw-bold">{{ swap.to_amount }} {{ swap.to_token }}</span>
+                                    </p>
+                                    <small class="text-muted">{{ swap.date }} • {{ swap.time }}</small>
+                                </div>
+                                <span class="badge bg-{{ swap.status_color }}">{{ swap.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if not recent_swaps|default([]) %}
+                        <div class="list-group-item text-center p-4">
+                            <i class="fas fa-exchange-alt mb-2" style="font-size: 2rem; color: var(--secondary-color);"></i>
+                            <p class="mb-0 text-muted">No recent swaps</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if recent_swaps|default([]) %}
+                <div class="card-footer text-center">
+                    <a href="/transactions?type=swap" class="btn btn-link">View All Swaps</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Token Selector Modal -->
+<div class="modal fade" id="tokenSelectorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Token</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="tokenSearch" placeholder="Search by name or address">
+                </div>
+                
+                <div class="nav nav-pills mb-3" id="tokenTabs" role="tablist">
+                    <button class="nav-link active" id="all-tokens-tab" data-bs-toggle="pill" data-bs-target="#all-tokens" type="button" role="tab">All</button>
+                    <button class="nav-link" id="favorite-tokens-tab" data-bs-toggle="pill" data-bs-target="#favorite-tokens" type="button" role="tab">Favorites</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="all-tokens" role="tabpanel">
+                        <div class="list-group token-list">
+                            {% for token in all_tokens|default([
+                                {'symbol': 'MARBLE', 'name': 'Marble Token', 'balance': '1000.00', 'price': '0.05', 'color': '#1a73e8'},
+                                {'symbol': 'USDC', 'name': 'USD Coin', 'balance': '500.00', 'price': '1.00', 'color': '#0f9d58'},
+                                {'symbol': 'WETH', 'name': 'Wrapped Ethereum', 'balance': '1.25', 'price': '3500.00', 'color': '#6c757d'},
+                                {'symbol': 'WBTC', 'name': 'Wrapped Bitcoin', 'balance': '0.05', 'price': '65000.00', 'color': '#db4437'},
+                                {'symbol': 'DAI', 'name': 'Dai Stablecoin', 'balance': '750.00', 'price': '1.00', 'color': '#f4b400'},
+                                {'symbol': 'USDT', 'name': 'Tether', 'balance': '400.00', 'price': '1.00', 'color': '#17a2b8'}
+                            ]) %}
+                            <button type="button" class="list-group-item list-group-item-action token-item" data-token-symbol="{{ token.symbol }}" data-token-color="{{ token.color }}" data-token-balance="{{ token.balance }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="token-icon me-3" style="background-color: {{ token.color }};">
+                                        {{ token.symbol|first }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">{{ token.name }}</h6>
+                                        <small class="text-muted">{{ token.symbol }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>{{ token.balance }}</div>
+                                        <small class="text-muted">${{ token.price }}</small>
+                                    </div>
+                                </div>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="favorite-tokens" role="tabpanel">
+                        <div class="list-group token-list">
+                            {% for token in favorite_tokens|default([
+                                {'symbol': 'MARBLE', 'name': 'Marble Token', 'balance': '1000.00', 'price': '0.05', 'color': '#1a73e8'},
+                                {'symbol': 'USDC', 'name': 'USD Coin', 'balance': '500.00', 'price': '1.00', 'color': '#0f9d58'}
+                            ]) %}
+                            <button type="button" class="list-group-item list-group-item-action token-item" data-token-symbol="{{ token.symbol }}" data-token-color="{{ token.color }}" data-token-balance="{{ token.balance }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="token-icon me-3" style="background-color: {{ token.color }};">
+                                        {{ token.symbol|first }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">{{ token.name }}</h6>
+                                        <small class="text-muted">{{ token.symbol }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>{{ token.balance }}</div>
+                                        <small class="text-muted">${{ token.price }}</small>
+                                    </div>
+                                </div>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Swap Confirmation Modal -->
+<div class="modal fade" id="swapConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Swap</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="token-icon" id="confirmFromIcon" style="background-color: #1a73e8;">
+                            M
+                        </div>
+                        <div class="mx-3">
+                            <i class="fas fa-arrow-right fa-2x text-muted"></i>
+                        </div>
+                        <div class="token-icon" id="confirmToIcon" style="background-color: #0f9d58;">
+                            U
+                        </div>
+                    </div>
+                </div>
+                
+                <div class

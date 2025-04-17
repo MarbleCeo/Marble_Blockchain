@@ -1,0 +1,91 @@
+{
+  "general": {
+    "connect-wallet": "CONNECT WALLET",
+    "disconnect": "DISCONNECT",
+    "coming-soon": "Coming Soon",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "refresh": "Refresh",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "submit": "Submit"
+  },
+  "navigation": {
+    "swap": "Swap",
+    "liquidity": "Liquidity",
+    "farms": "Farms",
+    "staking": "Staking",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "swap": {
+    "title": "Swap",
+    "from": "From",
+    "to": "To",
+    "rate": "Rate",
+    "slippage-tolerance": "Slippage Tolerance",
+    "minimum-received": "Minimum Received",
+    "price-impact": "Price Impact",
+    "liquidity-provider-fee": "Liquidity Provider Fee",
+    "swap-button": "Swap",
+    "insufficient-balance": "Insufficient Balance",
+    "select-token": "Select Token",
+    "enter-amount": "Enter Amount",
+    "price-updated": "Price Updated",
+    "route": "Route",
+    "price": "Price"
+  },
+  "liquidity": {
+    "title": "Liquidity",
+    "your-liquidity": "Your Liquidity",
+    "add-liquidity": "Add Liquidity",
+    "remove-liquidity": "Remove Liquidity",
+    "create-pair": "Create Pair",
+    "no-liquidity-found": "No liquidity found",
+    "connect-wallet-to-view": "Connect wallet to view your liquidity",
+    "amount": "Amount",
+    "tokens": "Tokens",
+    "fees": "Fees",
+    "supply": "Supply"
+  },
+  "farms": {
+    "title": "Farms",
+    "stake": "Stake",
+    "unstake": "Unstake",
+    "harvest": "Harvest",
+    "apr": "APR",
+    "rewards": "Rewards",
+    "staked": "Staked",
+    "total-staked": "Total Staked",
+    "your-stake": "Your Stake",
+    "total-value-locked": "Total Value Locked",
+    "connect-wallet-to-view": "Connect wallet to view your farms"
+  },
+  "staking": {
+    "title": "Staking",
+    "stake": "Stake",
+    "unstake": "Unstake",
+    "rewards": "Rewards",
+    "apy": "APY",
+    "total-staked": "Total Staked",
+    "your-stake": "Your Stake",
+    "claim-rewards": "Claim Rewards",
+    "connect-wallet-to-view": "Connect wallet to view your stakes"
+  },
+  "wallet": {
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect",
+    "connected": "Connected",
+    "change-wallet": "Change Wallet",
+    "wallet-not-found": "Wallet not found",
+    "install-phantom": "Install Phantom",
+    "connect-to-phantom": "Connect to Phantom",
+    "connect-to-sollet": "Connect to Sollet",
+    "transaction-sent": "Transaction sent",
+    "transaction-confirmed": "Transaction confirmed",
+    "view-on-explorer": "View on Explorer",
+    "recent-transactions": "Recent Transactions",
+    "clear-all": "Clear All"
+  }
+}
